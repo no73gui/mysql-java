@@ -26,6 +26,8 @@ public class DbConnection {
 	        } catch (SQLException e) {
 	        // catch errors from SQL.
 	            System.err.println("Connection failed: " + e.getMessage());
+	            // creates a new DbE with a defaulted message "Failed to establish......", and a cause of whatever the SQLException
+	            // cause is, stored as e. 
 	            throw new DbException("Failed to establish a database connection", e);
 	        }
 	}
