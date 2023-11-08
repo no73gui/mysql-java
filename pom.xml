@@ -6,7 +6,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/x
   <artifactId>mysql-java</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <properties>
-	  <java.version>${java.version}</java.version>
+	  <java.version>17</java.version>
   </properties>
   <dependencies>
 	  <dependency>

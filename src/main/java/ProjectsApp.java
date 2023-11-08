@@ -17,7 +17,8 @@ public class ProjectsApp {
 	// are available.
 	private List<String> operationsList = List.of(
 					"1) Add a project",
-					"2) List projects"
+					"2) List projects",
+					"3) Select a project"
 					);
 			//@formatter:on
 
@@ -58,6 +59,9 @@ public class ProjectsApp {
 				case 2:
 					listProjects();
 					break;
+				case 3:
+					selectProject();
+					break;
 				default:
 					System.out.println("\n" + selection + " is not a valid selection. Try again...");
 					break;
@@ -71,19 +75,19 @@ public class ProjectsApp {
 	private void listProjects() {
 		List<Project> projects = projectService.fetchAllProjects();
 		System.out.println("\nProjects: ");
-		// for each Projet item, print ID separated with a : and indent each 3 spaces
+		// for each Projet item, print ID and name separated with a : and indent each 3 spaces
 		projects.forEach(
 				project -> System.out.println("   " + project.getProjectId() + ": " + project.getProjectName()));
 
 	}
 
 	// create a method to print and receive int input from a menu.
-	private int getUserSelection() {
+	private Integer getUserSelection() {
 		// print menu
 		printOperations();
 		// take in user input. distinct name for method call. This method will return
 		// int value.
-		int input = getIntInput("Enter a menu selection");
+		Integer input = getIntInput("Enter a menu selection");
 		// return that checks value of local variable input is null.
 		// Objects.isNull checks the Integer object is null. the Integer value 'input'
 		// is passed into the isNull method.
@@ -99,6 +103,13 @@ public class ProjectsApp {
 		// forEach is called,
 		// each iteration assigns its value to 'thing'.
 		operationsList.forEach(thing -> System.out.println(" " + thing));
+
+		if (Objects.isNull(currentProject)){
+			System.out.println("\nYou are not working with a project.");
+
+		}else {
+			System.out.println("You are working with project : " + currentProject);
+		}
 	}
 
 	// get user input of type Integer.
@@ -153,6 +164,19 @@ public class ProjectsApp {
 		Project dbProject = projectService.addProject(project);
 		System.out.println("Task Complete : " + dbProject + "created");
 	}
+	
+	private void selectProject(){ 
+		// set to null so there is no selection when called
+		Project currentProject = null;
+		// list all projects
+		listProjects();
+		Integer selection = getIntInput("Enter a project ID to select a project : ");
+		// assign output of selection passed into method to currentProject.
+		currentProject = ProjectService.getProjectBy_id(selection);
+		
+
+
+	}
 
 	// create getDecimalInput()
 	private BigDecimal getDecimalInput(String prompt) {
@@ -173,4 +197,5 @@ public class ProjectsApp {
 			throw new DbException(input + "is not a valid decimal. Try again...");
 		}
 	}
+
 }
