@@ -131,7 +131,7 @@ public class ProjectDao extends DaoBase {
 
 	
 	public Optional<Project> getProjectBy_Id(Integer projectId) {
-		String sql = "SELECT * FROM " + PROJECT_TABLE + "WHERE project_id = ?;";
+		String sql = "SELECT * FROM " + PROJECT_TABLE + " WHERE project_id = ?;";
 		// attempt connection to db via try with resources
 		try(Connection connect = DbConnection.getConnection()){
 			// on success, start sql transaction
@@ -146,9 +146,9 @@ public class ProjectDao extends DaoBase {
 				// prepare sql statement
 				try(PreparedStatement stmnt = connect.prepareStatement(sql)){
 					// getters and setters
-					setParameter(stmnt, 1, project.getMaterials(), Material.class);
+					setParameter(stmnt, 1, projectId , Integer.class);
 					// obtain resultset from the executed sql query.
-					try(ResultSet rslt = stmnt.executeQuery(sql)){
+					try(ResultSet rslt = stmnt.executeQuery()){
 						// process the query. .next() checks if there is at least one row in the resultset.
 						if (rslt.next()){
 							// extract rslt and assign to project value.
