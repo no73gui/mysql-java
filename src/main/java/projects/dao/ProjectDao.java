@@ -11,14 +11,17 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
 import com.mysql.cj.protocol.Resultset;
 
+import projects.entity.Category;
 import projects.entity.Material;
 import projects.entity.Project;
+import projects.entity.Step;
 import projects.exception.DbException;
 import provided.util.DaoBase;
 
@@ -26,12 +29,14 @@ import provided.util.DaoBase;
 public class ProjectDao extends DaoBase {
 
 	// create local constants.
-	private static final String CATEGORY_TABLE = "category";
-	private static final String MATERIAL_NAME = "material";
 	private static final String PROJECT_TABLE = "projects";
 	private static final String PROJECT_CATEGORY_TABLE = "project_category";
+	private static final String CATEGORY_TABLE = "category";
+	private static final String MATERIAL_TABLE = "material";
 	private static final String STEP_TABLE = "step";
 
+	
+	
 	public Project insertProject(Project project) {
 		// create SQL prepared statement to insert the values from the Project project
 		// passed in.
@@ -76,6 +81,7 @@ public class ProjectDao extends DaoBase {
 		}
 		
 	}
+	
 	
 	
 	// selects all projects from Projects
@@ -123,7 +129,8 @@ public class ProjectDao extends DaoBase {
 	}
 
 
-	public Optional<Project> fetchProjectBy_Id(Integer projectId) {
+	
+	public Optional<Project> getProjectBy_Id(Integer projectId) {
 		String sql = "SELECT * FROM " + PROJECT_TABLE + "WHERE project_id = ?;";
 		// attempt connection to db via try with resources
 		try(Connection connect = DbConnection.getConnection()){
@@ -149,53 +156,100 @@ public class ProjectDao extends DaoBase {
 						}
 					}
 				}
-				if (Objects.nonNull(project)){
-					project.getMaterials().addAll(getProjectMaterials(connect , projectId));
+						if (Objects.nonNull(project)){
+							project.getMaterials().addAll(getProject_Materials(connect , projectId));
 
-				}
-				catch (SQLException e){
-
-				}
-				// commit transaction
-				commitTransaction(connect);
-				
-				return Optional.ofNullable(project);
+						}
+						// commit transaction
+						commitTransaction(connect);
+						return Optional.ofNullable(project);
+						
 			}
 
 			// on fail, rollback connecton
-			catch (SQLException e){
+			catch (Exception e){
 				rollbackTransaction(connect);
 				// throw DbException message from Exception.
 				throw new DbException(e);
 			}
-			// catch sql exception should the database fail to connect
-			catch (Exception e){
-			throw new DbException(e);
+		}
+			// catch sql exception should the sql database fail to connect
+			catch (SQLException e){
+				throw new DbException(e);
 		}
 		
 	}
-	private List<Material> getProjectMaterials(Connection connect , Integer projectId) throws SQLException {
-		String sql = "SELECT * FROM " + PROJECT_TABLE + " WHERE project_id = ?";
+	
+	
+	
+	private List<Material> getProject_Materials(Connection connect , Integer projectId) throws SQLException {
+		String sql = "SELECT m.material_name FROM " + MATERIAL_TABLE + " m JOIN "
+				+ PROJECT_TABLE + " p WHERE p.project_id = ?;";
 		// connectoin
 		try(PreparedStatement stmnt = connect.prepareStatement(sql)){
 			setParameter(stmnt, 1, projectId, Integer.class);
 
 			try(ResultSet rslt = stmnt.executeQuery()){
 
-				Project project = new Project();
-				if (rslt.next()){
-					project = extract(rslt, Project.class);
+				List<Material> matLst= new LinkedList<>();
+				while (rslt.next()){
+					matLst.add(extract(rslt, Material.class));
 
 				}
+				return matLst;
 
 			}
-			catch (SQLException e){
-				throw new DbException(e);
-			}
-
-		}
-		catch (SQLException e){
-			throw new DbException(e);
 		}
 	}
+	
+	
+	
+	
+	private List<Step> getProject_Steps(Connection connect , Integer projectId) throws SQLException {
+		String sql = "SELECT s.steps FROM " + STEP_TABLE 
+				+ " s JOIN " + PROJECT_TABLE
+				+ " p WHERE p.project_id = ?;";
+		
+		try (PreparedStatement stmnt = connect.prepareStatement(sql)){
+			setParameter(stmnt, 1, projectId, Step.class);
+			try(ResultSet rslt = stmnt.executeQuery()){
+				
+				List<Step> stepLst = new LinkedList<>();
+				
+				while (rslt.next()) {
+					stepLst.add(extract(rslt, Step.class));
+				}
+				return stepLst;
+			}
+		}
+	}
+	
+	
+	
+	private List<Category> getProject_Cat(Connection connect , Integer projectId) throws SQLException {
+		// join 3 tables to get project category.
+		// get category from category table, category column.
+		String sql = "SELECT c.category " +
+	             "FROM " + CATEGORY_TABLE + " c " +
+				// join project_category on rows where category_id's in category and Project category are same.
+	             "JOIN " + PROJECT_CATEGORY_TABLE + "pc ON c.category_id = pc.category_id " +
+				// also join project table where project_category and project project_id is the same.
+	             "JOIN " + PROJECT_TABLE + " p ON pc.project_id = p.project_id " +
+	             "WHERE p.project_id = ? ";
+		
+		try (PreparedStatement stmnt = connect.prepareStatement(sql)){
+			setParameter(stmnt, 1, projectId, Category.class);
+			try(ResultSet rslt = stmnt.executeQuery()){
+				
+				List<Category> catLst = new LinkedList<>();
+				
+				while (rslt.next()) {
+					catLst.add(extract(rslt, Category.class));
+				}
+				return catLst;
+			}
+		}
+	}
+	
 }
+

@@ -25,6 +25,9 @@ public class ProjectsApp {
 	// create pvt inst of ProjectService with 0 construct named projectService.
 	private ProjectService projectService = new ProjectService();
 
+	// inst Project object
+	private Project currentProject;
+	
 	public static void main(String[] args) {
 		new ProjectsApp();
 		ProjectsApp projectsApp = new ProjectsApp();
@@ -68,6 +71,7 @@ public class ProjectsApp {
 				}
 			} catch (Exception e) {
 				System.out.println("\nError: " + e + " Try again...");
+				e.printStackTrace();
 			}
 		}
 	}
@@ -167,13 +171,18 @@ public class ProjectsApp {
 	
 	private void selectProject(){ 
 		// set to null so there is no selection when called
-		Project currentProject = null;
+		currentProject = null;
 		// list all projects
 		listProjects();
 		Integer selection = getIntInput("Enter a project ID to select a project : ");
 		// assign output of selection passed into method to currentProject.
-		currentProject = ProjectService.getProjectBy_id(selection);
-		
+		currentProject = projectService.getProjectBy_Id(selection);
+		if (Objects.isNull(currentProject)){
+			System.out.println(" You are not currently working with a project.");
+		}
+		else {
+			System.out.println("\nYou are working with project: " + currentProject);
+		}
 
 
 	}
@@ -197,5 +206,4 @@ public class ProjectsApp {
 			throw new DbException(input + "is not a valid decimal. Try again...");
 		}
 	}
-
 }
