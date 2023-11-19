@@ -251,5 +251,81 @@ public class ProjectDao extends DaoBase {
 		}
 	}
 	
+	// self explanitory name
+	public void modifyProjectDetails(Project project) {
+		// TODO modify project details using string literals as sql
+		
+		// @formatter: off
+		String sql = "UPDATE " + PROJECT_TABLE + " SET project_name = ?, estimated_hours = ?, actual_hours = ?, difficulty = ?, notes = ?, "
+				+ "WHERE project_id = ?;";
+		// @formatter: on
+		try (Connection connect = DbConnection.getConnection()){
+			// if successful, start a transaction. startTransaction() is in the DaoBase class.
+			startTransaction(connect);
+			// PreparedStatement from java.sql
+			try (PreparedStatement stmnt = connect.prepareStatement(sql)){ // parameterIndex:? ... each paraIndex indicates a int
+				// value. The int represents what position it is in in the String literal created outside the try block. 
+				setParameter(stmnt, 1,project.getProjectName(), String.class);
+				setParameter(stmnt, 2,project.getEstimatedHours(), BigDecimal.class);
+				setParameter(stmnt, 3,project.getActualHours(), BigDecimal.class);
+				setParameter(stmnt, 4,project.getDifficulty(), Integer.class);
+				setParameter(stmnt, 5,project.getNotes(), String.class);
+				// executeUpdate() executes the query. Can be used to create drop insert update delete etc.
+
+				// stmnt.executeQuery(); will execute select statements for pulling data.
+				stmnt.executeUpdate();
+				
+				commitTransaction(connect);
+								
+			}
+			catch (Exception e) {
+				rollbackTransaction(connect);
+				throw new DbException(e);
+			}
+		}
+		catch(SQLException e) {
+			throw new DbException(e);
+		}
+		
+		
+	}
+
+
+
+	public boolean deleteProject(Integer project_id) {
+		 String sql = "DELETE FROM " + PROJECT_TABLE + " WHERE project_id = ?";
+		    try (Connection connect = DbConnection.getConnection()){
+		        startTransaction(connect);
+		        try (PreparedStatement stmt = connect.prepareStatement(sql)) {
+		            setParameter(stmt, 1, project_id, getClass());
+		            // check for changes
+		            // int holder value for updated rows.
+		            int rowsAffected = stmt.executeUpdate();
+		            // if rowsAffected is greater than 0; proceed to transaction commit
+		            if (rowsAffected > 0) {
+		                commitTransaction(connect);
+		                // return true for success
+		                return true;
+		            } 
+		            else {
+		                // rollback if no changes occur; return false for success status
+		                rollbackTransaction(connect);
+		                return false;
+		            }
+		        }
+		        catch (Exception e) {
+		            rollbackTransaction(connect);
+		            throw new DbException(e);
+		        }
+		    } 
+		    catch (SQLException e) {
+		        throw new DbException(e);
+		    }
+		    
+	}
+
 }
+
+
+
 

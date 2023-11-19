@@ -18,7 +18,9 @@ public class ProjectsApp {
 	private List<String> operationsList = List.of(
 					"1) Add a project",
 					"2) List projects",
-					"3) Select a project"
+					"3) Select a project",
+					"4) Update Project Details",
+					"5) Delete a project"
 					);
 			//@formatter:on
 
@@ -65,6 +67,12 @@ public class ProjectsApp {
 				case 3:
 					selectProject();
 					break;
+				case 4:
+					updateProjectDetails();
+					break;
+				case 5:
+					deleteProject();
+					break;
 				default:
 					System.out.println("\n" + selection + " is not a valid selection. Try again...");
 					break;
@@ -74,6 +82,24 @@ public class ProjectsApp {
 				e.printStackTrace();
 			}
 		}
+	}
+
+	private void deleteProject() {
+		// list Projects
+		listProjects();
+		Integer selection = getIntInput("\nSelect a project to delete : ");
+		try {
+			projectService.deleteProject(selection);
+			System.out.println("---Project : " + selection + " Successfully Deleted---");
+		}
+		catch (Exception e) {
+			throw new DbException("---Project : " + selection + " unable to be deleted.---");
+		}
+		
+		if (currentProject.equals(selection)) {
+			currentProject = null;
+		}
+		
 	}
 
 	private void listProjects() {
@@ -206,4 +232,53 @@ public class ProjectsApp {
 			throw new DbException(input + "is not a valid decimal. Try again...");
 		}
 	}
+	
+	//START updateProject method
+	private void updateProjectDetails() { // uP1
+		// if null value in Current Project, sysout "select project" prompt.
+		if (Objects.isNull(currentProject)){
+			System.out.println("\nPlease Enter a Project selection...");
+			// return await entry.
+			return;
+		}
+		// getter name
+		String projectName = getStringInput("Enter the project name [" + currentProject.getProjectName() + "]"); // get String input from prompt.
+		// getter est hours
+		BigDecimal estimatedHours = getDecimalInput("Update the estimated completion hours [" + currentProject.getEstimatedHours() + "]");
+		// getter actual hours
+		BigDecimal actualHours = getDecimalInput("Update the actual completion hours [" + currentProject.getActualHours() + "]");
+		// getter difficulty
+		Integer difficulty = getIntInput("Enter the updated project difficulty (1-5) [" + currentProject.getDifficulty() +"]");
+		// getter notes
+		String notes = getStringInput("Enter the updated project notes : ");
+		// instantiate new Project object
+		Project project = new Project(); 
+		
+		project.setProjectId(currentProject.getProjectId());
+		// set the projectName to that of the currentProject if laProject Project object is null.
+		project.setProjectName(Objects.isNull(project) ? currentProject.getProjectName() : projectName);
+		// setter est hours
+		project.setEstimatedHours(Objects.isNull(project) ? currentProject.getEstimatedHours() : estimatedHours);
+		// setter actual hours
+		project.setActualHours(Objects.isNull(project) ? currentProject.getActualHours() : actualHours);
+		// setter difficulty
+		project.setDifficulty(Objects.isNull(project) ? currentProject.getDifficulty() : difficulty);
+		// setter notes
+		project.setNotes(Objects.isNull(project) ? currentProject.getNotes() : notes);
+		
+		// reread the currentProject to take on the changes by calling getProjectBy_id
+		projectService.modifyProjectDetails(project);
+		currentProject = projectService.getProjectBy_Id(currentProject.getProjectId());
+		
+		
+	}// uP1
 }
+
+
+
+
+
+
+
+
+
