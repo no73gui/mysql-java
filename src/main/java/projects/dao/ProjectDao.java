@@ -293,35 +293,36 @@ public class ProjectDao extends DaoBase {
 
 
 	public boolean deleteProject(Integer project_id) {
-		 String sql = "DELETE FROM " + PROJECT_TABLE + " WHERE project_id = ?";
-		    try (Connection connect = DbConnection.getConnection()){
-		        startTransaction(connect);
-		        try (PreparedStatement stmt = connect.prepareStatement(sql)) {
-		            setParameter(stmt, 1, project_id, getClass());
-		            // check for changes
-		            // int holder value for updated rows.
-		            int rowsAffected = stmt.executeUpdate();
-		            // if rowsAffected is greater than 0; proceed to transaction commit
-		            if (rowsAffected > 0) {
-		                commitTransaction(connect);
-		                // return true for success
-		                return true;
-		            } 
-		            else {
-		                // rollback if no changes occur; return false for success status
-		                rollbackTransaction(connect);
-		                return false;
-		            }
-		        }
-		        catch (Exception e) {
-		            rollbackTransaction(connect);
-		            throw new DbException(e);
-		        }
-		    } 
-		    catch (SQLException e) {
-		        throw new DbException(e);
-		    }
-		    
+	    String sql = "DELETE FROM " + PROJECT_TABLE + " WHERE project_id = ?";
+	    
+	    try (Connection connect = DbConnection.getConnection()) {
+	        startTransaction(connect);
+
+	        try (PreparedStatement stmt = connect.prepareStatement(sql)) {
+	            // Set the parameter for the project_id
+	            stmt.setInt(1, project_id);
+
+	            // Execute the DELETE statement
+	            int rowsAffected = stmt.executeUpdate();
+
+	            // Check for changes
+	            if (rowsAffected > 0) {
+	                // Proceed to transaction commit
+	                commitTransaction(connect);
+	                // Return true for success
+	                return true;
+	            } else {
+	                // Rollback if no changes occur; return false for success status
+	                rollbackTransaction(connect);
+	                return false;
+	            }
+	        } catch (SQLException e) {
+	            rollbackTransaction(connect);
+	            throw new DbException(e);
+	        }
+	    } catch (Exception e) {
+	        throw new DbException(e);
+	    }
 	}
 
 }
