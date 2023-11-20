@@ -256,7 +256,7 @@ public class ProjectDao extends DaoBase {
 		// TODO modify project details using string literals as sql
 		
 		// @formatter: off
-		String sql = "UPDATE " + PROJECT_TABLE + " SET project_name = ?, estimated_hours = ?, actual_hours = ?, difficulty = ?, notes = ?, "
+		String sql = "UPDATE " + PROJECT_TABLE + " SET project_name = ?, estimated_hours = ?, actual_hours = ?, difficulty = ?, notes = ? "
 				+ "WHERE project_id = ?;";
 		// @formatter: on
 		try (Connection connect = DbConnection.getConnection()){
@@ -270,6 +270,8 @@ public class ProjectDao extends DaoBase {
 				setParameter(stmnt, 3,project.getActualHours(), BigDecimal.class);
 				setParameter(stmnt, 4,project.getDifficulty(), Integer.class);
 				setParameter(stmnt, 5,project.getNotes(), String.class);
+				setParameter(stmnt, 6,project.getProjectId(), Integer.class);
+				
 				// executeUpdate() executes the query. Can be used to create drop insert update delete etc.
 
 				// stmnt.executeQuery(); will execute select statements for pulling data.
